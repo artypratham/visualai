@@ -8,6 +8,10 @@ import { SpiralClassifier } from "./SpiralClassifier";
 import { EmbeddingSpace } from "./EmbeddingSpace";
 import { AttentionVisualizer } from "./AttentionVisualizer";
 import { NextTokenPredictor } from "./NextTokenPredictor";
+import { OverfitPlayground } from "./OverfitPlayground";
+import { KernelExplorer } from "./KernelExplorer";
+import { KMeansLive } from "./KMeansLive";
+import { TokenizerPlayground } from "./TokenizerPlayground";
 
 /** Interactive artifacts that are fully built. Others render as ComingSoon. */
 export const artifacts: Partial<Record<ArtifactKey, ComponentType>> = {
@@ -19,4 +23,8 @@ export const artifacts: Partial<Record<ArtifactKey, ComponentType>> = {
   "embedding-space": EmbeddingSpace,
   attention: AttentionVisualizer,
   "next-token": NextTokenPredictor,
+  "overfit-playground": OverfitPlayground,
+  "kernel-explorer": KernelExplorer,
+  kmeans: KMeansLive,
+  tokenizer: TokenizerPlayground,
 };

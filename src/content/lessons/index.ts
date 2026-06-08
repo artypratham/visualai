@@ -7,6 +7,10 @@ import { NeuralNetworksContent } from "./neural-networks";
 import { WordsAsNumbersContent } from "./words-as-numbers";
 import { AttentionContent } from "./attention";
 import { LargeLanguageModelsContent } from "./large-language-models";
+import { OverfittingContent } from "./overfitting";
+import { HowAiSeesContent } from "./how-ai-sees";
+import { TokensContent } from "./tokens";
+import { LearningWithoutLabelsContent } from "./learning-without-labels";
 
 /** Prose bodies for lessons that are fully written. */
 export const lessonContent: Record<string, ComponentType> = {
@@ -18,4 +22,8 @@ export const lessonContent: Record<string, ComponentType> = {
   "words-as-numbers": WordsAsNumbersContent,
   attention: AttentionContent,
   "large-language-models": LargeLanguageModelsContent,
+  overfitting: OverfittingContent,
+  "how-ai-sees": HowAiSeesContent,
+  tokens: TokensContent,
+  "learning-without-labels": LearningWithoutLabelsContent,
 };

@@ -12,7 +12,27 @@ export type ArtifactKey =
   | "spiral-classifier"
   | "embedding-space"
   | "attention"
-  | "next-token";
+  | "next-token"
+  // Track A — Trust & Limits
+  | "overfit-playground"
+  | "biased-machine"
+  | "confidently-wrong"
+  // Track B — Beyond Text
+  | "kernel-explorer"
+  | "diffusion-denoiser"
+  // Track C — How ChatGPT Was Made
+  | "tokenizer"
+  | "fine-tuning"
+  | "rlhf-trainer"
+  | "scaling-laws"
+  // Track D — Other Ways to Learn
+  | "kmeans"
+  | "gridworld"
+  // Track E — Using AI Well
+  | "context-window"
+  | "rag"
+  | "agent-loop"
+  | "prompt-lab";
 
 export type Accent = "violet" | "teal" | "rose" | "amber";
 
@@ -58,6 +78,41 @@ export const chapters: Chapter[] = [
     title: "Language Models",
     blurb: "How words become math, and how that math became ChatGPT.",
     accent: "rose",
+  },
+  {
+    id: "trust-and-limits",
+    index: 4,
+    title: "Trust & Limits",
+    blurb: "Why AI gets things wrong — overfitting, bias, and confident nonsense.",
+    accent: "amber",
+  },
+  {
+    id: "beyond-text",
+    index: 5,
+    title: "Beyond Text",
+    blurb: "AI's other senses: how it sees images, and how it paints new ones.",
+    accent: "violet",
+  },
+  {
+    id: "how-chatgpt-was-made",
+    index: 6,
+    title: "How ChatGPT Was Made",
+    blurb: "The training pipeline behind a modern assistant, step by step.",
+    accent: "teal",
+  },
+  {
+    id: "other-ways-to-learn",
+    index: 7,
+    title: "Other Ways to Learn",
+    blurb: "Not everything is labelled examples — clustering and learning by reward.",
+    accent: "rose",
+  },
+  {
+    id: "using-ai-well",
+    index: 8,
+    title: "Using AI Well",
+    blurb: "Practical literacy: context, retrieval, agents, and prompting.",
+    accent: "amber",
   },
 ];
 
@@ -149,6 +204,181 @@ export const lessons: Lesson[] = [
     status: "ready",
     artifact: "next-token",
     takeaway: "Become the model: pick the next token from live probabilities, and feel temperature.",
+  },
+
+  // ---- Chapter 4 — Trust & Limits ----
+  {
+    slug: "overfitting",
+    order: 9,
+    chapterId: "trust-and-limits",
+    title: "Overfitting",
+    hook: "A model that aces its practice questions can still flunk the real exam — that's overfitting: memorising instead of understanding.",
+    minutes: 8,
+    status: "ready",
+    artifact: "overfit-playground",
+    takeaway: "Crank a model's complexity and watch it ace the training data while failing everything new.",
+  },
+  {
+    slug: "bias",
+    order: 10,
+    chapterId: "trust-and-limits",
+    title: "Bias In, Bias Out",
+    hook: "An AI is only as fair as the examples it's fed. Give it a lopsided history and it learns lopsided rules.",
+    minutes: 7,
+    status: "soon",
+    artifact: "biased-machine",
+    takeaway: "Train a model on skewed data, watch it discriminate, then fix the data and watch it change.",
+  },
+  {
+    slug: "why-ai-makes-things-up",
+    order: 11,
+    chapterId: "trust-and-limits",
+    title: "Why AI Makes Things Up",
+    hook: "Language models are built to sound right, not to be right. That gap is exactly where hallucinations live.",
+    minutes: 7,
+    status: "soon",
+    artifact: "confidently-wrong",
+    takeaway: "Watch a model state a fluent, confident, completely invented 'fact'.",
+  },
+
+  // ---- Chapter 5 — Beyond Text ----
+  {
+    slug: "how-ai-sees",
+    order: 12,
+    chapterId: "beyond-text",
+    title: "How AI Sees",
+    hook: "Before AI can recognise a face it has to find edges. One tiny sliding window does that — the seed of all computer vision.",
+    minutes: 8,
+    status: "ready",
+    artifact: "kernel-explorer",
+    takeaway: "Slide a 3×3 filter across an image and watch edges, blurs and embossing appear.",
+  },
+  {
+    slug: "making-images",
+    order: 13,
+    chapterId: "beyond-text",
+    title: "Making Images",
+    hook: "Tools like Midjourney start from pure static and sculpt it into a picture. Here's the trick — one denoising step at a time.",
+    minutes: 8,
+    status: "soon",
+    artifact: "diffusion-denoiser",
+    takeaway: "Drag a slider from noise to image and feel how diffusion models paint.",
+  },
+
+  // ---- Chapter 6 — How ChatGPT Was Made ----
+  {
+    slug: "tokens",
+    order: 14,
+    chapterId: "how-chatgpt-was-made",
+    title: "Tokens",
+    hook: "An LLM doesn't read letters, or even words — it reads 'tokens'. It's also why it can't reliably spell 'strawberry'.",
+    minutes: 7,
+    status: "ready",
+    artifact: "tokenizer",
+    takeaway: "Type anything and watch it shatter into the exact chunks a model actually sees.",
+  },
+  {
+    slug: "fine-tuning",
+    order: 15,
+    chapterId: "how-chatgpt-was-made",
+    title: "Fine-Tuning",
+    hook: "A base model knows a little about everything. Fine-tuning is the short, focused course that gives it a job.",
+    minutes: 8,
+    status: "soon",
+    artifact: "fine-tuning",
+    takeaway: "Nudge a generic model toward a specific style with just a handful of examples.",
+  },
+  {
+    slug: "learning-from-feedback",
+    order: 16,
+    chapterId: "how-chatgpt-was-made",
+    title: "Learning from Feedback",
+    hook: "Why is ChatGPT polite and helpful? Humans rated thousands of answers, and it learned to chase the thumbs-up.",
+    minutes: 9,
+    status: "soon",
+    artifact: "rlhf-trainer",
+    takeaway: "Rate a model's answers 👍/👎 and watch its behaviour drift toward what you reward.",
+  },
+  {
+    slug: "scaling-laws",
+    order: 17,
+    chapterId: "how-chatgpt-was-made",
+    title: "Scaling Laws",
+    hook: "The surprising engine of the AI boom: just make it bigger. More data, more parameters, more compute — predictably better.",
+    minutes: 7,
+    status: "soon",
+    artifact: "scaling-laws",
+    takeaway: "Slide data, size and compute and watch the error fall along a smooth curve.",
+  },
+
+  // ---- Chapter 7 — Other Ways to Learn ----
+  {
+    slug: "learning-without-labels",
+    order: 18,
+    chapterId: "other-ways-to-learn",
+    title: "Learning Without Labels",
+    hook: "Nobody tells these dots which group they belong to. The algorithm finds the groups entirely on its own.",
+    minutes: 8,
+    status: "ready",
+    artifact: "kmeans",
+    takeaway: "Watch k-means discover clusters in unlabelled data, step by step.",
+  },
+  {
+    slug: "trial-and-error",
+    order: 19,
+    chapterId: "other-ways-to-learn",
+    title: "Trial & Error",
+    hook: "No examples, no labels — just rewards. This is how AI learns to play games and steer robots: try, fail, repeat.",
+    minutes: 10,
+    status: "soon",
+    artifact: "gridworld",
+    takeaway: "Watch an agent learn to reach a goal purely from reward and punishment.",
+  },
+
+  // ---- Chapter 8 — Using AI Well ----
+  {
+    slug: "the-context-window",
+    order: 20,
+    chapterId: "using-ai-well",
+    title: "The Context Window",
+    hook: "An AI's memory has a hard edge. Fill it up and the oldest words quietly fall off the back.",
+    minutes: 7,
+    status: "soon",
+    artifact: "context-window",
+    takeaway: "Stuff a conversation full of tokens and watch the model start to forget the start.",
+  },
+  {
+    slug: "giving-ai-a-library",
+    order: 21,
+    chapterId: "using-ai-well",
+    title: "Giving AI a Library",
+    hook: "How do you make a model answer about your private documents? You let it look them up first. That's RAG.",
+    minutes: 8,
+    status: "soon",
+    artifact: "rag",
+    takeaway: "Ask a question and watch the system fetch the right page before it answers.",
+  },
+  {
+    slug: "ai-that-acts",
+    order: 22,
+    chapterId: "using-ai-well",
+    title: "AI That Acts",
+    hook: "Chatbots talk. Agents do. Give a model tools and a loop, and it can think, act, and check its own work.",
+    minutes: 8,
+    status: "soon",
+    artifact: "agent-loop",
+    takeaway: "Watch a model reason, call a tool, read the result, and try again.",
+  },
+  {
+    slug: "the-art-of-the-prompt",
+    order: 23,
+    chapterId: "using-ai-well",
+    title: "The Art of the Prompt",
+    hook: "Same model, same question — wildly different answers depending on how you ask. The prompt is the steering wheel.",
+    minutes: 7,
+    status: "soon",
+    artifact: "prompt-lab",
+    takeaway: "Compare how small changes to a prompt reshape the model's reply.",
   },
 ];
 

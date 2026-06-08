@@ -149,8 +149,11 @@ function evaluate(net: Net, data: Sample[]) {
   return { loss: loss / data.length, acc: correct / data.length };
 }
 
-const toX = (x1: number) => ((x1 + 1) / 2) * S;
-const toY = (x2: number) => S - ((x2 + 1) / 2) * S;
+// Round coords so 1-ULP Math.sqrt/log/cos diffs (SSR vs browser) don't trip a
+// hydration mismatch on the SSR-rendered points.
+const r2 = (n: number) => Math.round(n * 100) / 100;
+const toX = (x1: number) => r2(((x1 + 1) / 2) * S);
+const toY = (x2: number) => r2(S - ((x2 + 1) / 2) * S);
 
 export function SpiralClassifier() {
   const [dataset, setDataset] = useState<Dataset>("spiral");
