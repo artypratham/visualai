@@ -15,6 +15,9 @@ import { BiasContent } from "./bias";
 import { WhyAiMakesThingsUpContent } from "./why-ai-makes-things-up";
 import { MakingImagesContent } from "./making-images";
 import { TrialAndErrorContent } from "./trial-and-error";
+import { FineTuningContent } from "./fine-tuning";
+import { LearningFromFeedbackContent } from "./learning-from-feedback";
+import { ScalingLawsContent } from "./scaling-laws";
 
 /** Prose bodies for lessons that are fully written. */
 export const lessonContent: Record<string, ComponentType> = {
@@ -34,4 +37,7 @@ export const lessonContent: Record<string, ComponentType> = {
   "why-ai-makes-things-up": WhyAiMakesThingsUpContent,
   "making-images": MakingImagesContent,
   "trial-and-error": TrialAndErrorContent,
+  "fine-tuning": FineTuningContent,
+  "learning-from-feedback": LearningFromFeedbackContent,
+  "scaling-laws": ScalingLawsContent,
 };

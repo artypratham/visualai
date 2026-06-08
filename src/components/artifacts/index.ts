@@ -16,6 +16,9 @@ import { BiasedMachine } from "./BiasedMachine";
 import { ConfidentlyWrong } from "./ConfidentlyWrong";
 import { DiffusionDenoiser } from "./DiffusionDenoiser";
 import { Gridworld } from "./Gridworld";
+import { FineTuning } from "./FineTuning";
+import { RlhfTrainer } from "./RlhfTrainer";
+import { ScalingLaws } from "./ScalingLaws";
 
 /** Interactive artifacts that are fully built. Others render as ComingSoon. */
 export const artifacts: Partial<Record<ArtifactKey, ComponentType>> = {
@@ -35,4 +38,7 @@ export const artifacts: Partial<Record<ArtifactKey, ComponentType>> = {
   "confidently-wrong": ConfidentlyWrong,
   "diffusion-denoiser": DiffusionDenoiser,
   gridworld: Gridworld,
+  "fine-tuning": FineTuning,
+  "rlhf-trainer": RlhfTrainer,
+  "scaling-laws": ScalingLaws,
 };
