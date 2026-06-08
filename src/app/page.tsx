@@ -117,7 +117,7 @@ export default function Home() {
         <Reveal>
           <div className="text-center">
             <h2 className="text-balance font-display text-3xl font-medium tracking-tight text-foreground sm:text-4xl">
-              The whole journey, in three chapters
+              The whole journey, in {chapters.length} chapters
             </h2>
             <p className="mx-auto mt-3 max-w-lg text-muted">
               Start at the very beginning and climb. Each rung unlocks the next idea.
@@ -170,7 +170,7 @@ export default function Home() {
             <div className="pointer-events-none absolute inset-0 bg-aurora opacity-80" aria-hidden />
             <div className="relative">
               <h2 className="mx-auto max-w-2xl text-balance font-display text-3xl font-medium tracking-tight text-foreground sm:text-4xl">
-                Forty minutes from here, AI will stop feeling like magic.
+                A few clicks from here, AI will stop feeling like magic.
               </h2>
               <p className="mx-auto mt-4 max-w-md text-muted">
                 It&apos;ll start feeling like something you understand. Begin with a single click.

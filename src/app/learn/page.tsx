@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Roadmap } from "@/components/roadmap/Roadmap";
 import { ProgressSummary } from "@/components/roadmap/ProgressSummary";
+import { totalLessons } from "@/lib/curriculum";
 
 export const metadata: Metadata = {
   title: "The Roadmap",
-  description: "The full first-principles path through AI — eight tinkerable lessons, from zero to language models.",
+  description: `The full first-principles path through AI — ${totalLessons} tinkerable lessons, from zero to language models.`,
 };
 
 export default function LearnPage() {
@@ -18,8 +19,8 @@ export default function LearnPage() {
         From zero to language models
       </h1>
       <p className="mt-4 max-w-xl text-lg text-muted">
-        Eight lessons, each built on the one before it. No prior knowledge assumed — just curiosity and a mouse.
-        Your progress saves automatically in this browser.
+        A path of {totalLessons} lessons, each built on the one before it. No prior knowledge assumed — just
+        curiosity and a mouse. Your progress saves automatically in this browser.
       </p>
 
       <div className="mt-8">
