@@ -123,8 +123,9 @@ export function EmbeddingSpace() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="relative overflow-hidden rounded-2xl border border-border bg-surface-2">
-        <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+      <div className="overflow-hidden rounded-2xl border border-border bg-surface-2">
+        <div className="overflow-x-auto">
+        <svg viewBox={`0 0 ${W} ${H}`} className="block w-full min-w-[600px]">
           <defs>
             <marker id="emb-arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
               <path d="M0,0 L9,4.5 L0,9 Z" fill="var(--foreground)" />
@@ -161,9 +162,10 @@ export function EmbeddingSpace() {
             return (
               <g
                 key={d.w}
-                style={{ cursor: "default", opacity: dim ? 0.3 : 1, transition: "opacity 0.2s" }}
+                style={{ cursor: "pointer", opacity: dim ? 0.3 : 1, transition: "opacity 0.2s" }}
                 onMouseEnter={() => setHovered(d.w)}
                 onMouseLeave={() => setHovered(null)}
+                onClick={() => setHovered((h) => (h === d.w ? null : d.w))}
               >
                 <circle cx={mapX(d.x)} cy={mapY(d.y)} r={isAnswer ? 6 : 4} fill={catColor(d.cat)} />
                 <text
@@ -179,7 +181,9 @@ export function EmbeddingSpace() {
             );
           })}
         </svg>
+        </div>
       </div>
+      <p className="-mt-2 text-center text-xs text-subtle sm:hidden">Swipe the map sideways to explore →</p>
 
       {/* analogy machine */}
       <div className="rounded-2xl border border-border bg-surface p-5">
@@ -216,7 +220,7 @@ export function EmbeddingSpace() {
         </div>
       </div>
       <p className="text-center text-xs text-muted">
-        Hover any word to see its nearest neighbours · colours group words by meaning, with no one telling them to
+        Hover or tap a word to see its nearest neighbours · colours group words by meaning, with no one telling them to
       </p>
     </div>
   );
