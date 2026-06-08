@@ -11,6 +11,10 @@ import { OverfittingContent } from "./overfitting";
 import { HowAiSeesContent } from "./how-ai-sees";
 import { TokensContent } from "./tokens";
 import { LearningWithoutLabelsContent } from "./learning-without-labels";
+import { BiasContent } from "./bias";
+import { WhyAiMakesThingsUpContent } from "./why-ai-makes-things-up";
+import { MakingImagesContent } from "./making-images";
+import { TrialAndErrorContent } from "./trial-and-error";
 
 /** Prose bodies for lessons that are fully written. */
 export const lessonContent: Record<string, ComponentType> = {
@@ -26,4 +30,8 @@ export const lessonContent: Record<string, ComponentType> = {
   "how-ai-sees": HowAiSeesContent,
   tokens: TokensContent,
   "learning-without-labels": LearningWithoutLabelsContent,
+  bias: BiasContent,
+  "why-ai-makes-things-up": WhyAiMakesThingsUpContent,
+  "making-images": MakingImagesContent,
+  "trial-and-error": TrialAndErrorContent,
 };

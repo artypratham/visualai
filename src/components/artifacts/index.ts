@@ -12,6 +12,10 @@ import { OverfitPlayground } from "./OverfitPlayground";
 import { KernelExplorer } from "./KernelExplorer";
 import { KMeansLive } from "./KMeansLive";
 import { TokenizerPlayground } from "./TokenizerPlayground";
+import { BiasedMachine } from "./BiasedMachine";
+import { ConfidentlyWrong } from "./ConfidentlyWrong";
+import { DiffusionDenoiser } from "./DiffusionDenoiser";
+import { Gridworld } from "./Gridworld";
 
 /** Interactive artifacts that are fully built. Others render as ComingSoon. */
 export const artifacts: Partial<Record<ArtifactKey, ComponentType>> = {
@@ -27,4 +31,8 @@ export const artifacts: Partial<Record<ArtifactKey, ComponentType>> = {
   "kernel-explorer": KernelExplorer,
   kmeans: KMeansLive,
   tokenizer: TokenizerPlayground,
+  "biased-machine": BiasedMachine,
+  "confidently-wrong": ConfidentlyWrong,
+  "diffusion-denoiser": DiffusionDenoiser,
+  gridworld: Gridworld,
 };
