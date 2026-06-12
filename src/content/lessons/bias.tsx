@@ -1,4 +1,7 @@
-import { Prose, Lead, P, H2, Strong, Em, Term } from "@/components/lesson/prose";
+import { Prose, Lead, P, H2, Strong, Em, Term, Code } from "@/components/lesson/prose";
+import { AdvancedSection, AdvH } from "@/components/lesson/AdvancedSection";
+import { MathBlock, MathInline } from "@/components/lesson/math";
+import { CodeBlock } from "@/components/lesson/CodeBlock";
 import { Callout } from "@/components/lesson/Callout";
 import { ArtifactFrame } from "@/components/lesson/ArtifactFrame";
 import { BiasedMachine } from "@/components/artifacts/BiasedMachine";
@@ -67,6 +70,52 @@ export function BiasContent() {
           with total confidence. Why does it make things up? That&apos;s next.
         </p>
       </Callout>
+
+      <AdvancedSection>
+        <P>
+          &ldquo;Fair&rdquo; sounds like one idea. Formalise it and it splits into several — and they turn out to be
+          mathematically incompatible. This is why AI fairness is a research field and not a checkbox.
+        </P>
+
+        <AdvH>The math — competing definitions</AdvH>
+        <P>
+          Let <MathInline tex={String.raw`\hat{Y}`} /> be the model&apos;s decision and{" "}
+          <MathInline tex={String.raw`A`} /> the group attribute. <Strong>Demographic parity</Strong> demands equal
+          acceptance rates:
+        </P>
+        <MathBlock tex={String.raw`P(\hat{Y} = 1 \mid A = a) = P(\hat{Y} = 1 \mid A = b)`} />
+        <P>
+          <Strong>Equalised odds</Strong> demands equal error rates instead — among the truly qualified, the same
+          chance of acceptance (and likewise among the unqualified):
+        </P>
+        <MathBlock tex={String.raw`P(\hat{Y} = 1 \mid Y = y,\, A = a) = P(\hat{Y} = 1 \mid Y = y,\, A = b) \quad \text{for } y \in \{0, 1\}`} />
+        <P>
+          A third asks that confidence scores mean the same thing for both groups (<Em>calibration</Em>). The
+          impossibility result: when base rates differ between groups, <Strong>no classifier can satisfy all of
+          these at once</Strong> — you must choose which fairness to enforce, and that choice is a values question,
+          not a math question. The artifact&apos;s red-ringed dots are an equalised-odds violation: qualified people
+          with different acceptance odds depending on group.
+        </P>
+
+        <AdvH>The code</AdvH>
+        <CodeBlock
+          title="auditing a model for disparate impact"
+          code={`def fairness_audit(model, data):
+    for group in groups(data):
+        rate    = mean(model(x) == 1 for x in group)         # selection rate
+        tpr     = mean(model(x) == 1 for x in group if y(x) == 1)
+        fpr     = mean(model(x) == 1 for x in group if y(x) == 0)
+        report(group, rate, tpr, fpr)
+    # four-fifths rule of thumb: min(rate) / max(rate) < 0.8 -> red flag
+    # unequal tpr/fpr across groups -> equalised-odds violation`}
+        />
+        <P>
+          And the trap from the lesson, formally: dropping the <MathInline tex={String.raw`A`} /> column is not
+          enough, because correlated features keep <MathInline tex={String.raw`I(X; A) > 0`} /> — the data still
+          carries information about the group (postcodes, schools, names). The model will find it, because finding
+          correlations is the only thing it does. Auditing outcomes, not inputs, is the honest test.
+        </P>
+      </AdvancedSection>
     </Prose>
   );
 }

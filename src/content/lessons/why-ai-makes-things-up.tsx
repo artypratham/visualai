@@ -1,4 +1,7 @@
-import { Prose, Lead, P, H2, Strong, Em, Term } from "@/components/lesson/prose";
+import { Prose, Lead, P, H2, Strong, Em, Term, Code } from "@/components/lesson/prose";
+import { AdvancedSection, AdvH } from "@/components/lesson/AdvancedSection";
+import { MathBlock, MathInline } from "@/components/lesson/math";
+import { CodeBlock } from "@/components/lesson/CodeBlock";
 import { Callout } from "@/components/lesson/Callout";
 import { ArtifactFrame } from "@/components/lesson/ArtifactFrame";
 import { ConfidentlyWrong } from "@/components/artifacts/ConfidentlyWrong";
@@ -66,6 +69,56 @@ export function WhyAiMakesThingsUpContent() {
           uplifting: giving AI a brand-new sense. In the next chapter it stops reading and starts <Strong>seeing</Strong>.
         </p>
       </Callout>
+
+      <AdvancedSection>
+        <P>
+          Hallucination isn&apos;t a mystery once you look at the objective. The model was optimised for one number —
+          and truth wasn&apos;t it.
+        </P>
+
+        <AdvH>The math — what training actually rewards</AdvH>
+        <P>Pretraining maximises the likelihood of the corpus:</P>
+        <MathBlock tex={String.raw`\max_{\theta} \; \sum_{t} \log P_{\theta}\bigl(x_t \mid x_{<t}\bigr)`} />
+        <P>
+          Nothing in that sum checks facts — it rewards <Em>matching the distribution of text</Em>. If the corpus
+          contains a thousand confident movie-plot summaries and zero examples of &ldquo;I don&apos;t know that
+          film,&rdquo; then for a made-up title the highest-likelihood continuation is a confident plot. The model
+          is doing its job perfectly; the job was never truth.
+        </P>
+
+        <AdvH>The math — measuring overconfidence</AdvH>
+        <P>
+          A model is <Term define="A model is calibrated when, among all answers it gives with confidence p, a fraction p are actually correct.">calibrated</Term>{" "}
+          when confidence matches accuracy: <MathInline tex={String.raw`P(\text{correct} \mid \text{conf} = p) = p`} />.
+          The standard score is the Expected Calibration Error — bucket predictions by confidence, compare each
+          bucket&apos;s average confidence to its actual accuracy:
+        </P>
+        <MathBlock tex={String.raw`\mathrm{ECE} = \sum_{b=1}^{B} \frac{n_b}{N}\,\bigl|\, \mathrm{acc}(b) - \mathrm{conf}(b) \,\bigr|`} />
+        <P>
+          The game you just played was an informal ECE probe: the answers all <Em>felt</Em> ~90% confident, but the
+          accuracy in the set was 20%. That gap is the hallucination problem in one number. (A subtle empirical
+          fact: base models are often reasonably calibrated, and the politeness training from the RLHF lesson can
+          make calibration <Em>worse</Em> — humans up-vote confident-sounding answers.)
+        </P>
+
+        <AdvH>The code</AdvH>
+        <CodeBlock
+          title="expected calibration error"
+          code={`def ece(predictions, n_buckets=10):
+    buckets = group_by(predictions, key=lambda p: floor(p.conf * n_buckets))
+    total = 0
+    for b in buckets:
+        acc  = mean(p.was_correct for p in b)
+        conf = mean(p.conf for p in b)
+        total += len(b) / len(predictions) * abs(acc - conf)
+    return total   # 0 = honest confidence; big = confidently wrong`}
+        />
+        <P>
+          The practical mitigations all share one shape — stop asking the weights to be a database: retrieval (give
+          it documents to quote), tools (give it a calculator), and abstention training (reward &ldquo;I&apos;m not
+          sure&rdquo;). The first two are exactly the final chapter of this course.
+        </P>
+      </AdvancedSection>
     </Prose>
   );
 }

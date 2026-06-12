@@ -1,4 +1,7 @@
-import { Prose, Lead, P, H2, Strong, Em, Term } from "@/components/lesson/prose";
+import { Prose, Lead, P, H2, Strong, Em, Term, Code } from "@/components/lesson/prose";
+import { AdvancedSection, AdvH } from "@/components/lesson/AdvancedSection";
+import { MathBlock, MathInline } from "@/components/lesson/math";
+import { CodeBlock } from "@/components/lesson/CodeBlock";
 import { Callout } from "@/components/lesson/Callout";
 import { ArtifactFrame } from "@/components/lesson/ArtifactFrame";
 import { Gridworld } from "@/components/artifacts/Gridworld";
@@ -72,6 +75,59 @@ export function TrialAndErrorContent() {
           <Strong>wield</Strong> them well — starting with the hard edge of their memory.
         </p>
       </Callout>
+
+      <AdvancedSection>
+        <P>
+          The colours and arrows you watched form are a table of numbers called <Code>Q</Code>, and the rule that
+          fills it in is three lines of math.
+        </P>
+
+        <AdvH>The math</AdvH>
+        <P>
+          <MathInline tex={String.raw`Q(s, a)`} /> means: &ldquo;the total future reward I expect if I take action{" "}
+          <MathInline tex={String.raw`a`} /> in square <MathInline tex={String.raw`s`} /> and act well afterwards.&rdquo;
+          The key insight is that good values are <Em>self-consistent</Em> — a square is worth the reward you get
+          plus the value of the best square it leads to. That recursion is the{" "}
+          <Term define="The self-consistency equation that optimal values must satisfy.">Bellman equation</Term>:
+        </P>
+        <MathBlock tex={String.raw`Q^{*}(s, a) = \mathbb{E}\!\left[\, r + \gamma \max_{a'} Q^{*}(s', a') \,\right]`} />
+        <P>
+          where <MathInline tex={String.raw`\gamma \in [0,1)`} /> is the <Strong>discount</Strong> — how much
+          tomorrow&apos;s reward counts versus today&apos;s (the artifact uses 0.92, which is what makes value fade
+          smoothly with distance from the flag). Q-learning turns the equation into an update: after every single
+          move, drag your estimate a little toward what the world just told you —
+        </P>
+        <MathBlock tex={String.raw`Q(s,a) \leftarrow Q(s,a) + \alpha \Bigl[\underbrace{r + \gamma \max_{a'} Q(s', a')}_{\text{what just happened}} - \underbrace{Q(s,a)}_{\text{what I believed}}\Bigr]`} />
+        <P>
+          The bracketed quantity is the <Em>temporal-difference error</Em> — surprise, in number form. Note the deep
+          rhyme with Lesson 3: belief minus evidence, times a learning rate. It&apos;s gradient descent&apos;s
+          worldview applied to decisions.
+        </P>
+
+        <AdvH>The code</AdvH>
+        <P>This is the artifact&apos;s actual inner loop — it ran a few hundred times while you watched:</P>
+        <CodeBlock
+          title="one Q-learning episode (the Gridworld's real code)"
+          code={`def run_episode(Q, eps):
+    s = START
+    while not terminal(s):
+        if random() < eps:               # explore: try something random
+            a = random_action()
+        else:                            # exploit: use current best guess
+            a = argmax(Q[s])
+        s2, r = step(s, a)               # act, observe
+        target = r + GAMMA * max(Q[s2])  # Bellman target
+        Q[s][a] += ALPHA * (target - Q[s][a])
+        s = s2`}
+        />
+        <P>
+          The <Code>eps</Code> schedule (start ~0.35, decay to 0.05) is the{" "}
+          <Strong>exploration–exploitation trade-off</Strong> made concrete: explore early or you never find the
+          goal; exploit late or you never cash in. Scale this idea up — replace the Q-table with a neural network
+          that <Em>estimates</Em> Q — and you have Deep Q-Networks, the system that learned Atari from pixels. Add
+          human preference scores as the reward and you have the RLHF from the previous chapter.
+        </P>
+      </AdvancedSection>
     </Prose>
   );
 }

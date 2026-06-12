@@ -1,4 +1,7 @@
-import { Prose, Lead, P, H2, Strong, Em, Term } from "@/components/lesson/prose";
+import { Prose, Lead, P, H2, Strong, Em, Term, Code } from "@/components/lesson/prose";
+import { AdvancedSection, AdvH } from "@/components/lesson/AdvancedSection";
+import { MathBlock, MathInline } from "@/components/lesson/math";
+import { CodeBlock } from "@/components/lesson/CodeBlock";
 import { Callout } from "@/components/lesson/Callout";
 import { ArtifactFrame } from "@/components/lesson/ArtifactFrame";
 import { KMeansLive } from "@/components/artifacts/KMeansLive";
@@ -72,6 +75,57 @@ export function LearningWithoutLabelsContent() {
           <Strong>reward</Strong> — trial, error, and the occasional treat. That&apos;s next.
         </p>
       </Callout>
+
+      <AdvancedSection>
+        <P>
+          The two-step dance you watched is secretly an optimiser — it just never computes a gradient. Here&apos;s
+          what it minimises and why it can&apos;t loop forever.
+        </P>
+
+        <AdvH>The math</AdvH>
+        <P>
+          k-means minimises the total squared distance from each point to its cluster&apos;s centre (&ldquo;inertia&rdquo;):
+        </P>
+        <MathBlock tex={String.raw`J = \sum_{k=1}^{K} \;\sum_{\mathbf{x} \in C_k} \bigl\lVert \mathbf{x} - \boldsymbol{\mu}_k \bigr\rVert^2`} />
+        <P>
+          Each of Lloyd&apos;s two steps can only lower <MathInline tex={String.raw`J`} />: the{" "}
+          <Strong>assign</Strong> step gives every point its nearest centre (best possible assignment for the current
+          centres), and the <Strong>update</Strong> step moves each centre to its cluster&apos;s mean — which is
+          precisely the point minimising summed squared distance:
+        </P>
+        <MathBlock tex={String.raw`\boldsymbol{\mu}_k = \frac{1}{|C_k|} \sum_{\mathbf{x} \in C_k} \mathbf{x}`} />
+        <P>
+          <MathInline tex={String.raw`J`} /> falls monotonically and there are finitely many assignments, so the
+          loop must stop. But — like the loss valleys of Lesson 3 — it stops at a <Em>local</Em> minimum that depends
+          on where the centres started. That&apos;s exactly what you saw when re-seeding occasionally produced a
+          worse grouping. The standard fixes: <Strong>k-means++</Strong> (seed new centres far from existing ones,
+          proportional to squared distance) and simply running it several times, keeping the lowest{" "}
+          <MathInline tex={String.raw`J`} />.
+        </P>
+
+        <AdvH>The code</AdvH>
+        <CodeBlock
+          title="Lloyd's algorithm (the artifact's exact loop)"
+          code={`def kmeans(points, k):
+    centers = kmeans_pp_init(points, k)      # smart seeding
+    while True:
+        # assign: paint each point with its nearest centre
+        clusters = group_by(points,
+                            key=lambda p: argmin(dist(p, c) for c in centers))
+        # update: slide each centre to the middle of its colour
+        new_centers = [mean(cluster) for cluster in clusters]
+        if new_centers == centers:           # nothing moved -> settled
+            return clusters
+        centers = new_centers`}
+        />
+        <P>
+          Picking <MathInline tex={String.raw`K`} /> is the genuinely unsolved-feeling part — <MathInline tex={String.raw`J`} />{" "}
+          always falls as <MathInline tex={String.raw`K`} /> grows (more centres can only help), so you look for the
+          &ldquo;elbow&rdquo; where improvement suddenly slows, or use silhouette scores. And the modern echo: the
+          self-supervised pretraining of Chapter 6 is this same spirit — no labels, structure discovered from the
+          data itself — scaled from 120 dots to the entire internet.
+        </P>
+      </AdvancedSection>
     </Prose>
   );
 }

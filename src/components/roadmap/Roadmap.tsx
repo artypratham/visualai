@@ -97,6 +97,14 @@ function RoadmapItem({
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-2">
             <span className="font-medium text-foreground">{lesson.title}</span>
+            {lesson.advanced && (
+              <span
+                title="Includes an Under-the-Hood section: the math and the code"
+                className="rounded-full bg-accent-soft px-2 py-0.5 font-mono text-[0.65rem] font-semibold text-accent"
+              >
+                ∑ deep dive
+              </span>
+            )}
             {done && (
               <span className="rounded-full bg-teal-soft px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-teal">
                 Done

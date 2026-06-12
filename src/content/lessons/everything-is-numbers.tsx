@@ -1,4 +1,7 @@
-import { Prose, Lead, P, H2, Strong, Em, Term } from "@/components/lesson/prose";
+import { Prose, Lead, P, H2, Strong, Em, Term, Code } from "@/components/lesson/prose";
+import { AdvancedSection, AdvH } from "@/components/lesson/AdvancedSection";
+import { MathBlock, MathInline } from "@/components/lesson/math";
+import { CodeBlock } from "@/components/lesson/CodeBlock";
 import { Callout } from "@/components/lesson/Callout";
 import { ArtifactFrame } from "@/components/lesson/ArtifactFrame";
 import { PixelInspector } from "@/components/artifacts/PixelInspector";
@@ -66,6 +69,44 @@ export function EverythingIsNumbersContent() {
           do. That hunt for the pattern is exactly where we&apos;re headed next.
         </p>
       </Callout>
+
+      <AdvancedSection>
+        <P>
+          The grid you drew has a formal name and a standard set of moves. Engineers call the whole family of
+          number-grids <Term define="An n-dimensional grid of numbers: 0-D scalar, 1-D vector, 2-D matrix, 3-D and beyond.">tensors</Term>.
+        </P>
+
+        <AdvH>The math</AdvH>
+        <P>
+          A greyscale image is a matrix <MathInline tex={String.raw`I \in \mathbb{R}^{H \times W}`} />. A colour image
+          adds a channel axis — <MathInline tex={String.raw`\mathbb{R}^{H \times W \times 3}`} /> for red, green,
+          blue. Two preprocessing moves you&apos;ll meet in every real pipeline:
+        </P>
+        <MathBlock tex={String.raw`\text{normalise: } x' = \frac{x}{255} \in [0, 1] \qquad\quad \text{flatten: } \mathbb{R}^{H \times W} \to \mathbb{R}^{H \cdot W}`} />
+        <P>
+          Normalising matters because gradient descent (Lesson 3) takes steps proportional to input scale — features
+          living on 0–255 would shout over features living on 0–1. Flattening a 28×28 digit gives the famous
+          784-dimensional vector: from then on, the image is just a <Em>point in 784-dimensional space</Em>, and
+          &ldquo;similar images&rdquo; means &ldquo;nearby points&rdquo; — exactly the worldview Lesson 1 used in 2-D.
+        </P>
+
+        <AdvH>The code</AdvH>
+        <CodeBlock
+          title="image → model-ready tensor"
+          code={`def to_tensor(image):                  # image: H x W x 3, values 0..255
+    x = image / 255.0                  # normalise to [0, 1]
+    x = (x - mean) / std               # centre each channel (standard trick)
+    return x.reshape(-1)               # flatten -> one long vector
+
+# 28 x 28 greyscale digit -> vector of 784 floats
+# 224 x 224 colour photo  -> vector of 150,528 floats`}
+        />
+        <P>
+          One honest wrinkle: flattening throws away the fact that pixel (3, 4) sits <Em>next to</Em> pixel (3, 5) —
+          the neighbourhood structure. Networks that keep the grid and exploit that adjacency are exactly the
+          convolutional networks of the <Strong>How AI Sees</Strong> lesson. Same numbers, smarter wiring.
+        </P>
+      </AdvancedSection>
     </Prose>
   );
 }

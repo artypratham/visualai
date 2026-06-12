@@ -1,4 +1,7 @@
-import { Prose, Lead, P, H2, Strong, Em, Term } from "@/components/lesson/prose";
+import { Prose, Lead, P, H2, Strong, Em, Term, Code } from "@/components/lesson/prose";
+import { AdvancedSection, AdvH } from "@/components/lesson/AdvancedSection";
+import { MathBlock, MathInline } from "@/components/lesson/math";
+import { CodeBlock } from "@/components/lesson/CodeBlock";
 import { Callout } from "@/components/lesson/Callout";
 import { ArtifactFrame } from "@/components/lesson/ArtifactFrame";
 import { DiffusionDenoiser } from "@/components/artifacts/DiffusionDenoiser";
@@ -70,6 +73,65 @@ export function MakingImagesContent() {
           words into <Strong>tokens</Strong>.
         </p>
       </Callout>
+
+      <AdvancedSection>
+        <P>
+          Diffusion has unusually clean math for something that feels like sorcery. Two equations carry the whole
+          idea.
+        </P>
+
+        <AdvH>The math — destroying (no learning needed)</AdvH>
+        <P>
+          The <Em>forward</Em> process mixes an image <MathInline tex={String.raw`x_0`} /> with Gaussian noise{" "}
+          <MathInline tex={String.raw`\varepsilon \sim \mathcal{N}(0, I)`} />. Thanks to a closed form, you can jump
+          straight to any noise level <MathInline tex={String.raw`t`} />:
+        </P>
+        <MathBlock tex={String.raw`x_t = \sqrt{\bar{\alpha}_t}\; x_0 \;+\; \sqrt{1 - \bar{\alpha}_t}\;\varepsilon`} />
+        <P>
+          where <MathInline tex={String.raw`\bar{\alpha}_t`} /> slides from 1 (clean) to 0 (pure static) on a fixed
+          schedule. Honest disclosure: this equation is <Em>exactly</Em> what the slider above implements — your
+          drag sets <MathInline tex={String.raw`\bar{\alpha}_t`} />. What the toy fakes is the hard direction.
+        </P>
+
+        <AdvH>The math — learning to undo it</AdvH>
+        <P>
+          The model <MathInline tex={String.raw`\varepsilon_{\theta}`} /> (a big U-shaped CNN — the convolutions from
+          two lessons ago) is trained on one disarmingly simple objective: look at a noised image and{" "}
+          <Strong>predict the noise that was added</Strong>:
+        </P>
+        <MathBlock tex={String.raw`\mathcal{L} = \mathbb{E}_{x_0,\, \varepsilon,\, t}\; \bigl\lVert\, \varepsilon - \varepsilon_{\theta}(x_t,\, t) \,\bigr\rVert^2`} />
+        <P>
+          That&apos;s a plain regression loss — Lesson 3&apos;s MSE, wearing a trench coat. Generation then runs the
+          schedule backwards: start from pure noise, repeatedly subtract a fraction of the predicted noise (plus a
+          dash of fresh randomness to keep samples diverse).
+        </P>
+
+        <AdvH>The code</AdvH>
+        <CodeBlock
+          title="DDPM in miniature"
+          code={`def train_step(x0):
+    t   = random_timestep()
+    eps = gaussian_noise()
+    x_t = sqrt(abar[t]) * x0 + sqrt(1 - abar[t]) * eps
+    loss = mse(model(x_t, t), eps)      # "which part is noise?"
+    descend(loss)                       # gradient descent, as always
+
+def sample():
+    x = gaussian_noise()                # pure static
+    for t in reversed(range(T)):        # e.g. T = 50 steps
+        eps_hat = model(x, t)
+        x = step_toward_clean(x, eps_hat, t)  # remove a sliver of noise
+        if t > 0:
+            x += sigma[t] * gaussian_noise()  # keep it stochastic
+    return x`}
+        />
+        <P>
+          The text prompt enters as <Em>conditioning</Em>: <MathInline tex={String.raw`\varepsilon_{\theta}(x_t, t, c)`} />{" "}
+          also receives an embedding of your words (cross-attention — Chapter 3 again), so every denoising step leans
+          toward images whose captions matched the prompt. Tools like Stable Diffusion run this in a compressed
+          latent space rather than raw pixels, which is why they&apos;re fast enough to be products.
+        </P>
+      </AdvancedSection>
     </Prose>
   );
 }

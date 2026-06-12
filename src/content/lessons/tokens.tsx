@@ -1,4 +1,7 @@
 import { Prose, Lead, P, H2, Strong, Em, Term, Code } from "@/components/lesson/prose";
+import { AdvancedSection, AdvH } from "@/components/lesson/AdvancedSection";
+import { MathBlock, MathInline } from "@/components/lesson/math";
+import { CodeBlock } from "@/components/lesson/CodeBlock";
 import { Callout } from "@/components/lesson/Callout";
 import { ArtifactFrame } from "@/components/lesson/ArtifactFrame";
 import { TokenizerPlayground } from "@/components/artifacts/TokenizerPlayground";
@@ -70,6 +73,61 @@ export function TokensContent() {
           predictor become a helpful, polite assistant? That transformation is the rest of this chapter.
         </p>
       </Callout>
+
+      <AdvancedSection>
+        <P>
+          Byte-pair encoding is one of the rare algorithms in modern AI with <Em>no</Em> gradient descent in it —
+          it&apos;s pure counting, and you can hold all of it in your head.
+        </P>
+
+        <AdvH>The algorithm</AdvH>
+        <P>
+          Start with a vocabulary of single bytes. Then, over a huge corpus, repeat one move: find the{" "}
+          <Strong>most frequent adjacent pair</Strong> of tokens and merge it into a new token. Stop when the
+          vocabulary hits the budget (GPT-style models: ~50,000–100,000 entries):
+        </P>
+        <CodeBlock
+          title="training a BPE tokenizer"
+          code={`def train_bpe(corpus, vocab_size):
+    vocab  = all_single_bytes()              # 256 starters
+    merges = []
+    while len(vocab) < vocab_size:
+        pairs = count_adjacent_pairs(corpus) # ("t","h") -> 9.1M, ...
+        best  = argmax(pairs)
+        merges.append(best)
+        corpus = merge_everywhere(corpus, best)   # "t","h" -> "th"
+        vocab.add(join(best))
+    return vocab, merges
+
+def tokenize(text, merges):                  # at run time
+    tokens = list(bytes(text))
+    for pair in merges:                      # replay merges in order
+        tokens = merge_everywhere(tokens, pair)
+    return tokens`}
+        />
+        <P>
+          Frequent strings (&ldquo;the&rdquo;, &ldquo;ing&rdquo;, &ldquo; and&rdquo;) climb the merge ladder into
+          single tokens; rare words decompose into familiar pieces; anything at all — typos, emoji, code — falls back
+          to bytes. Nothing is ever &ldquo;out of vocabulary.&rdquo;
+        </P>
+
+        <AdvH>The trade-off, quantified</AdvH>
+        <P>
+          Why ~100k and not a million? The embedding table from the Words-as-Numbers lesson costs{" "}
+          <MathInline tex={String.raw`|V| \times d`} /> parameters (100k tokens × 12k dims ≈ a billion parameters in a
+          frontier model — just for the dictionary). Bigger <MathInline tex={String.raw`|V|`} /> also makes the final
+          softmax over the vocabulary pricier, but shortens sequences — and since attention costs{" "}
+          <MathInline tex={String.raw`O(t^2)`} /> in sequence length <MathInline tex={String.raw`t`} />, fewer, fatter
+          tokens are usually worth it. English averages ≈ 4 characters per token; languages the merges weren&apos;t
+          trained on can need 2–3× more tokens for the same sentence — same words, multiplied API bill.
+        </P>
+        <P>
+          And the strawberry mystery, fully solved: <Code>strawberry</Code> arrives as token IDs like{" "}
+          <Code>[straw, berry]</Code>. Counting the R&apos;s inside them is asking about <Em>bytes the model never
+          receives</Em>. It can only answer from having read text about strawberry&apos;s spelling — memory, not
+          inspection.
+        </P>
+      </AdvancedSection>
     </Prose>
   );
 }

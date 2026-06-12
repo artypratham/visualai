@@ -1,4 +1,7 @@
-import { Prose, Lead, P, H2, Strong, Em, Term } from "@/components/lesson/prose";
+import { Prose, Lead, P, H2, Strong, Em, Term, Code } from "@/components/lesson/prose";
+import { AdvancedSection, AdvH } from "@/components/lesson/AdvancedSection";
+import { MathBlock, MathInline } from "@/components/lesson/math";
+import { CodeBlock } from "@/components/lesson/CodeBlock";
 import { Callout } from "@/components/lesson/Callout";
 import { ArtifactFrame } from "@/components/lesson/ArtifactFrame";
 import { KernelExplorer } from "@/components/artifacts/KernelExplorer";
@@ -72,6 +75,58 @@ export function HowAiSeesContent() {
           start from pure noise and remove it, step by step. That&apos;s next.
         </p>
       </Callout>
+
+      <AdvancedSection>
+        <P>
+          The slide-multiply-sum you watched has a one-line definition, a shape calculus every vision engineer
+          memorises, and a four-line implementation.
+        </P>
+
+        <AdvH>The math</AdvH>
+        <P>
+          A (discrete, 2-D) <Term define="Slide a small kernel over an image; at each position, multiply element-wise and sum.">convolution</Term>{" "}
+          of image <MathInline tex={String.raw`I`} /> with a <MathInline tex={String.raw`k \times k`} /> kernel{" "}
+          <MathInline tex={String.raw`K`} />:
+        </P>
+        <MathBlock tex={String.raw`(I * K)(x, y) = \sum_{i=1}^{k}\sum_{j=1}^{k} I(x{+}i,\, y{+}j)\; K(i, j)`} />
+        <P>
+          With padding <MathInline tex={String.raw`p`} /> and stride <MathInline tex={String.raw`s`} />, an{" "}
+          <MathInline tex={String.raw`n \times n`} /> input produces an output of size:
+        </P>
+        <MathBlock tex={String.raw`n_{\text{out}} = \left\lfloor \frac{n + 2p - k}{s} \right\rfloor + 1`} />
+        <P>
+          Why this beats the flatten-everything approach from Lesson 2 — two structural superpowers:{" "}
+          <Strong>weight sharing</Strong> (one 3×3 kernel = 9 parameters scanned everywhere, versus millions for a
+          dense layer over a photo) and <Strong>translation equivariance</Strong> (a cat detector works wherever the
+          cat sits, for free). And crucially, the kernel entries are just weights — the same{" "}
+          <MathInline tex={String.raw`\partial \mathcal{L} / \partial K_{ij}`} /> gradient-descent story as every
+          other lesson, so the network <Em>learns</Em> its own edge detectors.
+        </P>
+
+        <AdvH>The code</AdvH>
+        <CodeBlock
+          title="conv2d (the Kernel Explorer's exact loop)"
+          code={`def conv2d(image, kernel):
+    out = zeros(H, W)
+    for y in range(H):
+        for x in range(W):
+            total = 0
+            for dy in (-1, 0, 1):
+                for dx in (-1, 0, 1):
+                    total += image[y+dy][x+dx] * kernel[dy+1][dx+1]
+            out[y][x] = total
+    return out
+# a CNN layer: many kernels -> many output "feature maps",
+# then a nonlinearity, then convolve those maps again, deeper and deeper`}
+        />
+        <P>
+          Stack the layers and the receptive field grows: layer 1 sees 3×3 pixels, layer 2 effectively 5×5, and ten
+          layers deep a single unit summarises a whole region — edges → textures → parts → objects. The grand modern
+          twist: Vision Transformers skip convolution entirely, chop the image into 16×16 patch &ldquo;tokens,&rdquo;
+          and run the attention from Chapter 3 on them. Both architectures win benchmarks; the inductive bias of
+          convolution just gets you there with less data.
+        </P>
+      </AdvancedSection>
     </Prose>
   );
 }

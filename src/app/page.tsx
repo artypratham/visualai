@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Layers, MousePointerClick, Sparkles, Type } from "lucide-react";
+import { ArrowRight, FunctionSquare, Layers, MousePointerClick, Sparkles, Type } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
 import { ArtifactFrame } from "@/components/lesson/ArtifactFrame";
@@ -21,6 +21,11 @@ const values = [
     icon: Layers,
     title: "A real ladder",
     body: "Each lesson stands on the one before it — from “what is AI?” all the way to how ChatGPT works. Nothing skipped.",
+  },
+  {
+    icon: FunctionSquare,
+    title: "Two altitudes",
+    body: "Every lesson ends with an optional Under-the-Hood section — the real math and the actual code — for when intuition isn't enough.",
   },
 ];
 
@@ -97,7 +102,7 @@ export default function Home() {
             Built for people who&apos;ve always found AI a little intimidating
           </h2>
         </Reveal>
-        <div className="mt-12 grid gap-5 md:grid-cols-3">
+        <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           {values.map((v, i) => (
             <Reveal key={v.title} delay={i * 0.08}>
               <div className="surface-card h-full p-6 transition-shadow hover:shadow-[var(--shadow-md)]">

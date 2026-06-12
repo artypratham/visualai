@@ -230,6 +230,14 @@
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+/* NetworkFlow signal pulses: travel along an edge via CSS vars */
+@keyframes net-pulse {
+  0% { transform: translate(0, 0); opacity: 0; }
+  12% { opacity: 0.9; }
+  88% { opacity: 0.9; }
+  100% { transform: translate(var(--dx), var(--dy)); opacity: 0; }
+}
+
 @keyframes pulse-ring {
   0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 40%, transparent); }
   70% { box-shadow: 0 0 0 12px transparent; }

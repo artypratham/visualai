@@ -1,4 +1,7 @@
-import { Prose, Lead, P, H2, Strong, Em, Term } from "@/components/lesson/prose";
+import { Prose, Lead, P, H2, Strong, Em, Term, Code } from "@/components/lesson/prose";
+import { AdvancedSection, AdvH } from "@/components/lesson/AdvancedSection";
+import { MathBlock, MathInline } from "@/components/lesson/math";
+import { CodeBlock } from "@/components/lesson/CodeBlock";
 import { Callout } from "@/components/lesson/Callout";
 import { ArtifactFrame } from "@/components/lesson/ArtifactFrame";
 import { TeachTheMachine } from "@/components/artifacts/TeachTheMachine";
@@ -81,6 +84,50 @@ export function WhatIsAiContent() {
           next lesson.
         </p>
       </Callout>
+
+      <AdvancedSection>
+        <P>
+          The machine you just taught is the simplest real classifier there is — small enough that we can write all
+          of it down.
+        </P>
+
+        <AdvH>The math</AdvH>
+        <P>
+          &ldquo;Closest&rdquo; means <Term define="Straight-line distance between two points, generalised to any number of dimensions.">Euclidean distance</Term>.
+          For two points with <MathInline tex={String.raw`d`} /> features each:
+        </P>
+        <MathBlock tex={String.raw`\mathrm{dist}(\mathbf{p}, \mathbf{q}) = \sqrt{\sum_{i=1}^{d} (p_i - q_i)^2}`} />
+        <P>
+          k-Nearest-Neighbours classifies a new point by a majority vote of its <MathInline tex={String.raw`k`} />{" "}
+          closest labelled examples:
+        </P>
+        <MathBlock tex={String.raw`\hat{y} = \operatorname*{arg\,max}_{c} \;\sum_{i \in N_k(\mathbf{x})} \mathbb{1}\,[\,y_i = c\,]`} />
+        <P>
+          Your dots had <MathInline tex={String.raw`d = 2`} /> features (the two screen coordinates). A 12×12 sketch
+          from the next lesson has 144; a real photo, millions. The formula doesn&apos;t change — only{" "}
+          <MathInline tex={String.raw`d`} /> does.
+        </P>
+
+        <AdvH>The code</AdvH>
+        <CodeBlock
+          title="k-nearest neighbours — the entire 'model'"
+          code={`def predict(x, examples, k):
+    by_distance = sorted(examples, key=lambda e: dist(x, e.point))
+    nearest = by_distance[:k]
+    return majority_label(nearest)   # that's it. no training step at all.`}
+        />
+
+        <AdvH>Why we won&apos;t stop here</AdvH>
+        <P>
+          Two costs hide in those three lines. <Strong>Speed:</Strong> predicting one point means measuring the
+          distance to <Em>every</Em> stored example — <MathInline tex={String.raw`O(n \cdot d)`} /> work per query,
+          hopeless when <MathInline tex={String.raw`n`} /> is the internet. <Strong>Geometry:</Strong> in high
+          dimensions, distance itself goes strange — everything ends up nearly equally far from everything else (the{" "}
+          <Em>curse of dimensionality</Em>), so &ldquo;nearest&rdquo; stops meaning &ldquo;similar.&rdquo; The rest of
+          this course is, in a sense, the story of replacing &ldquo;memorise everything and compare&rdquo; with
+          &ldquo;compress the pattern into weights&rdquo; — models that train slowly so they can predict instantly.
+        </P>
+      </AdvancedSection>
     </Prose>
   );
 }

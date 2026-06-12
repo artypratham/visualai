@@ -1,4 +1,7 @@
 import { Prose, Lead, P, H2, Strong, Em, Term, Code } from "@/components/lesson/prose";
+import { AdvancedSection, AdvH } from "@/components/lesson/AdvancedSection";
+import { MathBlock, MathInline } from "@/components/lesson/math";
+import { CodeBlock } from "@/components/lesson/CodeBlock";
 import { Callout } from "@/components/lesson/Callout";
 import { ArtifactFrame } from "@/components/lesson/ArtifactFrame";
 import { EmbeddingSpace } from "@/components/artifacts/EmbeddingSpace";
@@ -85,6 +88,55 @@ export function WordsAsNumbersContent() {
           mechanism is <Strong>attention</Strong> — and it&apos;s next.
         </p>
       </Callout>
+
+      <AdvancedSection>
+        <P>
+          Two things make the word map precise: the right way to measure &ldquo;close,&rdquo; and the training trick
+          that places the points without any human drawing the map.
+        </P>
+
+        <AdvH>The math — similarity</AdvH>
+        <P>
+          In high dimensions, raw distance misleads (frequent words grow longer vectors), so embeddings are compared
+          by the <Em>angle</Em> between them — <Term define="The cosine of the angle between two vectors: 1 = same direction, 0 = unrelated, −1 = opposite.">cosine similarity</Term>:
+        </P>
+        <MathBlock tex={String.raw`\cos(\mathbf{u}, \mathbf{v}) = \frac{\mathbf{u} \cdot \mathbf{v}}{\lVert\mathbf{u}\rVert \, \lVert\mathbf{v}\rVert}`} />
+        <P>The analogy machine you drove is one line of vector arithmetic followed by a nearest-neighbour search:</P>
+        <MathBlock tex={String.raw`\text{queen} \approx \operatorname*{arg\,max}_{w \in V} \; \cos\bigl(\mathbf{v}_w,\; \mathbf{v}_{\text{king}} - \mathbf{v}_{\text{man}} + \mathbf{v}_{\text{woman}}\bigr)`} />
+
+        <AdvH>The math — where the coordinates come from</AdvH>
+        <P>
+          The classic recipe (word2vec&apos;s <Em>skip-gram</Em>) trains each word&apos;s vector to predict the words
+          around it. Over a huge corpus, maximise:
+        </P>
+        <MathBlock tex={String.raw`\sum_{t} \;\sum_{-c \,\le\, j \,\le\, c,\; j \neq 0} \log P\bigl(w_{t+j} \mid w_t\bigr), \qquad P(o \mid w) = \frac{e^{\mathbf{v}_o \cdot \mathbf{v}_w}}{\sum_{u \in V} e^{\mathbf{v}_u \cdot \mathbf{v}_w}}`} />
+        <P>
+          No labels, no dictionary — just &ldquo;words seen together get pulled together&rdquo; (the softmax pushes
+          everything else apart). Gender-as-a-direction is never programmed; it <Em>emerges</Em> because man/woman,
+          king/queen, uncle/aunt all co-occur with systematically different context words. That training is gradient
+          descent again — the only learning rule this course ever needs.
+        </P>
+
+        <AdvH>The code</AdvH>
+        <CodeBlock
+          title="similarity + analogy (the artifact's logic, real-scale)"
+          code={`def most_similar(target_vec, embeddings, exclude, k=5):
+    scores = []
+    for word, vec in embeddings.items():
+        if word not in exclude:
+            scores.append((cosine(vec, target_vec), word))
+    return sorted(scores, reverse=True)[:k]
+
+def analogy(a, b, c, E):               # a is to b as c is to ?
+    target = E[b] - E[a] + E[c]
+    return most_similar(target, E, exclude={a, b, c})`}
+        />
+        <P>
+          Modern LLMs keep the idea but lose the fixed map: a transformer&apos;s embeddings are <Em>contextual</Em>,
+          re-computed per sentence — so &ldquo;bank&rdquo; lands in different places in &ldquo;river bank&rdquo; and
+          &ldquo;bank loan.&rdquo; The mechanism that moves it is exactly the attention of the next lesson.
+        </P>
+      </AdvancedSection>
     </Prose>
   );
 }

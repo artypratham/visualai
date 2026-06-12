@@ -1,4 +1,7 @@
-import { Prose, Lead, P, H2, Strong, Em, Term } from "@/components/lesson/prose";
+import { Prose, Lead, P, H2, Strong, Em, Term, Code } from "@/components/lesson/prose";
+import { AdvancedSection, AdvH } from "@/components/lesson/AdvancedSection";
+import { MathBlock, MathInline } from "@/components/lesson/math";
+import { CodeBlock } from "@/components/lesson/CodeBlock";
 import { Callout } from "@/components/lesson/Callout";
 import { ArtifactFrame } from "@/components/lesson/ArtifactFrame";
 import { OverfitPlayground } from "@/components/artifacts/OverfitPlayground";
@@ -71,6 +74,61 @@ export function OverfittingContent() {
           skew. That&apos;s bias, and it&apos;s next.
         </p>
       </Callout>
+
+      <AdvancedSection>
+        <P>
+          The teal/hollow split you played with is the most important experimental design in machine learning. Here
+          is its formal skeleton — and the exact equations the artifact solves.
+        </P>
+
+        <AdvH>The math — two different errors</AdvH>
+        <P>
+          What we minimise is the <Em>training</Em> (empirical) risk; what we care about is the <Em>true</Em> risk on
+          unseen data:
+        </P>
+        <MathBlock tex={String.raw`\hat{R}(f) = \frac{1}{N}\sum_{i=1}^{N} \ell\bigl(f(x_i), y_i\bigr) \qquad\quad R(f) = \mathbb{E}_{(x,y)}\bigl[\ell\bigl(f(x), y\bigr)\bigr]`} />
+        <P>
+          Overfitting is the gap <MathInline tex={String.raw`R - \hat{R}`} /> growing as capacity grows. The classic
+          decomposition of expected test error splits it into three parts:
+        </P>
+        <MathBlock tex={String.raw`\mathbb{E}\bigl[(y - \hat{f}(x))^2\bigr] = \underbrace{\text{Bias}^2}_{\text{too simple}} + \underbrace{\text{Variance}}_{\text{too sensitive to the sample}} + \underbrace{\sigma^2}_{\text{irreducible noise}}`} />
+        <P>
+          Degree 1–2 in the artifact = high bias. Degree 10+ = high variance: re-roll the data and the wiggly curve
+          changes wildly while the smooth one barely moves. The sweet spot minimises the <Em>sum</Em>.
+        </P>
+
+        <AdvH>The math — the fix the artifact secretly uses</AdvH>
+        <P>
+          <Term define="Adding a penalty on weight size to the loss, discouraging extreme fits.">Regularisation</Term>{" "}
+          shrinks capacity smoothly instead of chopping it: penalise big coefficients,
+        </P>
+        <MathBlock tex={String.raw`\mathcal{J}(\mathbf{w}) = \sum_i \bigl(\hat{y}_i - y_i\bigr)^2 + \lambda \lVert \mathbf{w} \rVert^2 \;\;\Rightarrow\;\; \mathbf{w} = \bigl(A^{\top}A + \lambda I\bigr)^{-1} A^{\top}\mathbf{y}`} />
+        <P>
+          Fun fact: the playground above genuinely solves this <Em>ridge regression</Em> with a tiny{" "}
+          <MathInline tex={String.raw`\lambda = 10^{-7}`} /> — just enough to keep the matrix invertible. Crank{" "}
+          <MathInline tex={String.raw`\lambda`} /> up and even a degree-12 polynomial calms down.
+        </P>
+
+        <AdvH>The code</AdvH>
+        <CodeBlock
+          title="fit + honest evaluation (the artifact's actual procedure)"
+          code={`def fit_poly(train, degree, lam=1e-7):
+    A = [[x**j for j in range(degree + 1)] for (x, y) in train]
+    w = solve(A.T @ A + lam * I, A.T @ y_train)   # ridge normal equations
+    return w
+
+train_err = mse(w, train)   # always falls as degree rises
+test_err  = mse(w, test)    # the number that tells the truth
+# never let the model see 'test' during fitting. ever.`}
+        />
+        <P>
+          Real practice adds one more split — train / <Em>validation</Em> / test — because choosing the degree (or
+          any knob) by peeking at test error is itself a slow leak of information. Tune on validation; touch test
+          once, at the end. And the modern twist: very large neural networks can break this tidy U-shaped story
+          (&ldquo;double descent&rdquo;) — test error sometimes falls <Em>again</Em> past the interpolation point.
+          The train/test discipline is exactly how that surprise was discovered.
+        </P>
+      </AdvancedSection>
     </Prose>
   );
 }

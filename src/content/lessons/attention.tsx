@@ -1,4 +1,8 @@
-import { Prose, Lead, P, H2, Strong, Em, Term } from "@/components/lesson/prose";
+import { Prose, Lead, P, H2, Strong, Em, Term, Code } from "@/components/lesson/prose";
+import { AdvancedSection, AdvH } from "@/components/lesson/AdvancedSection";
+import { MathBlock, MathInline } from "@/components/lesson/math";
+import { CodeBlock } from "@/components/lesson/CodeBlock";
+import { QKVWalkthrough } from "@/components/artifacts/QKVWalkthrough";
 import { Callout } from "@/components/lesson/Callout";
 import { ArtifactFrame } from "@/components/lesson/ArtifactFrame";
 import { AttentionVisualizer } from "@/components/artifacts/AttentionVisualizer";
@@ -76,6 +80,53 @@ export function AttentionContent() {
           the internet, and you get a large language model. In the finale, you become the model.
         </p>
       </Callout>
+
+      <AdvancedSection>
+        <P>
+          The whole transformer rests on one equation. Here it is, then a step-through of the actual matrices, then
+          the code.
+        </P>
+
+        <AdvH>The math</AdvH>
+        <MathBlock tex={String.raw`\mathrm{Attention}(Q, K, V) = \mathrm{softmax}\!\left(\frac{QK^{\top}}{\sqrt{d_k}}\right) V`} />
+        <P>
+          Each token&apos;s embedding row in <MathInline tex={String.raw`X`} /> is projected three ways with learned
+          matrices: <MathInline tex={String.raw`Q = XW_Q`} />, <MathInline tex={String.raw`K = XW_K`} />,{" "}
+          <MathInline tex={String.raw`V = XW_V`} />. The score between token <MathInline tex={String.raw`i`} /> and
+          token <MathInline tex={String.raw`j`} /> is the dot product <MathInline tex={String.raw`\mathbf{q}_i \cdot \mathbf{k}_j`} /> —
+          literally the &ldquo;closeness&rdquo; measure from the embeddings lesson, applied between a question and an
+          offer. The <MathInline tex={String.raw`\sqrt{d_k}`} /> keeps those scores from growing with vector length
+          and saturating the softmax (that&apos;s the temperature slider you played with, in disguise). Each row of
+          the softmax output sums to 1 — the attention percentages you saw.
+        </P>
+        <P>
+          <Strong>Multi-head:</Strong> run <MathInline tex={String.raw`h`} /> of these in parallel with different
+          learned projections, concatenate, and project back:{" "}
+          <MathInline tex={String.raw`\mathrm{MultiHead}(X) = [\mathrm{head}_1; \dots; \mathrm{head}_h]\,W_O`} />.
+          One head can track pronouns while another matches adjectives to nouns.
+        </P>
+
+        <AdvH>The matrices, step by step</AdvH>
+        <QKVWalkthrough />
+
+        <AdvH>The code</AdvH>
+        <CodeBlock
+          title="self-attention, one head"
+          code={`def attention(X, Wq, Wk, Wv):
+    Q, K, V = X @ Wq, X @ Wk, X @ Wv     # project each token 3 ways
+    scores = Q @ K.T / sqrt(d_k)         # every query vs every key
+    A = softmax(scores, axis=rows)       # each row -> weights summing to 1
+    return A @ V                         # blend values by attention`}
+        />
+        <P>
+          Note what is <Em>not</Em> in this code: any notion of word order or distance. Attention treats the sentence
+          as a set — which is why transformers add <Code>positional encodings</Code> to the embeddings before this
+          step, so &ldquo;dog bites man&rdquo; and &ldquo;man bites dog&rdquo; don&apos;t look identical. And in a
+          decoder like ChatGPT, a <Strong>causal mask</Strong> sets every score where <MathInline tex={String.raw`j > i`} />{" "}
+          to <MathInline tex={String.raw`-\infty`} /> before the softmax, so a token can only attend backwards — you
+          can&apos;t peek at words you haven&apos;t written yet.
+        </P>
+      </AdvancedSection>
     </Prose>
   );
 }

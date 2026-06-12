@@ -1,4 +1,8 @@
 import { Prose, Lead, P, H2, Strong, Em, Term, Code } from "@/components/lesson/prose";
+import { AdvancedSection, AdvH } from "@/components/lesson/AdvancedSection";
+import { MathBlock, MathInline } from "@/components/lesson/math";
+import { CodeBlock } from "@/components/lesson/CodeBlock";
+import { NetworkFlow } from "@/components/artifacts/NetworkFlow";
 import { Callout } from "@/components/lesson/Callout";
 import { ArtifactFrame } from "@/components/lesson/ArtifactFrame";
 import { NeuronPlayground } from "@/components/artifacts/NeuronPlayground";
@@ -74,6 +78,58 @@ export function TheNeuronContent() {
           parts is what we&apos;ll do next.
         </p>
       </Callout>
+
+      <AdvancedSection>
+        <P>
+          One neuron is small enough to hold completely in your head — which makes it the perfect place to see the
+          full learning machinery with nothing hidden.
+        </P>
+
+        <AdvH>The math</AdvH>
+        <P>In vector form, the neuron is a dot product, a shift, and a squash:</P>
+        <MathBlock tex={String.raw`z = \mathbf{w}\cdot\mathbf{x} + b \qquad\quad \hat{y} = \sigma(z) = \frac{1}{1 + e^{-z}}`} />
+        <P>
+          The decision boundary you steered is exactly the set of points where the neuron is undecided,{" "}
+          <MathInline tex={String.raw`\mathbf{w}\cdot\mathbf{x} + b = 0`} /> — always a straight line (in higher
+          dimensions, a flat plane), perpendicular to <MathInline tex={String.raw`\mathbf{w}`} />. That&apos;s why
+          the arrow in the artifact is always at right angles to the boundary.
+        </P>
+        <P>The sigmoid has a famously tidy derivative, which is half the reason it was the classic choice:</P>
+        <MathBlock tex={String.raw`\sigma'(z) = \sigma(z)\,\bigl(1 - \sigma(z)\bigr)`} />
+        <P>
+          Train it with cross-entropy loss <MathInline tex={String.raw`\mathcal{L} = -\,y\log\hat{y} - (1-y)\log(1-\hat{y})`} />{" "}
+          and the gradient collapses to the cleanest formula in machine learning — error times input:
+        </P>
+        <MathBlock tex={String.raw`\frac{\partial \mathcal{L}}{\partial w_i} = (\hat{y} - y)\,x_i \qquad \frac{\partial \mathcal{L}}{\partial b} = \hat{y} - y`} />
+        <P>
+          A single trained neuron is, in fact, a model statisticians have used for decades under another name:{" "}
+          <Term define="A classic statistical model: linear weights through a sigmoid, trained on cross-entropy.">logistic regression</Term>.
+        </P>
+
+        <AdvH>The code</AdvH>
+        <CodeBlock
+          title="a neuron, learning"
+          code={`def forward(w, b, x):
+    z = dot(w, x) + b
+    return 1 / (1 + exp(-z))        # sigmoid -> confidence in "yes"
+
+def train_step(w, b, x, y, lr):
+    y_hat = forward(w, b, x)
+    error = y_hat - y               # the whole gradient story
+    for i in range(len(w)):
+        w[i] -= lr * error * x[i]   # blame ∝ error × input
+    b -= lr * error
+    return w, b`}
+        />
+
+        <AdvH>Watch the signal move</AdvH>
+        <P>
+          Here is a single neuron as a flow diagram — the same X-ray view the Neural Networks lesson uses for a full
+          network. Click the output node to see its arithmetic; flip to <Strong>Backward</Strong> to see the blame
+          signal <MathInline tex={String.raw`\delta = \hat{y} - y`} /> appear:
+        </P>
+        <NetworkFlow layers={[2, 1]} />
+      </AdvancedSection>
     </Prose>
   );
 }

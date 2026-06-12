@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Search, X } from "lucide-react";
+import { Check, ShieldQuestion, ThumbsDown, ThumbsUp, X } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/cn";
 
@@ -52,35 +52,57 @@ const QUESTIONS: QA[] = [
     answer: "17 × 24 = 388.",
     confidence: 81,
     correct: false,
-    truth: "It's 408. The model predicts plausible-looking digits — it isn't actually running the multiplication.",
+    truth: "Check it yourself: 17 × 24 = 408. The model predicts plausible-looking digits — it isn't actually running the multiplication.",
     why: "Fluent arithmetic, quietly wrong.",
   },
 ];
 
+type Guess = "trust" | "doubt";
+
 export function ConfidentlyWrong() {
   const [idx, setIdx] = useState(0);
-  const [revealed, setRevealed] = useState(false);
+  const [guesses, setGuesses] = useState<(Guess | null)[]>(() => QUESTIONS.map(() => null));
   const qa = QUESTIONS[idx];
+  const isTrue = QUESTIONS[idx].correct;
+  const guess = guesses[idx];
+  const revealed = guess !== null;
+
+  const answered = guesses.filter((g) => g !== null).length;
+  const caught = guesses.filter((g, i) => g !== null && (g === "trust") === QUESTIONS[i].correct).length;
+  const userWasRight = guess !== null && (guess === "trust") === isTrue;
+
+  const makeGuess = (g: Guess) => setGuesses((arr) => arr.map((v, i) => (i === idx ? g : v)));
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap gap-2">
-        {QUESTIONS.map((item, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => {
-              setIdx(i);
-              setRevealed(false);
-            }}
-            className={cn(
-              "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
-              i === idx ? "border-accent bg-accent-soft text-accent" : "border-border bg-surface-2 text-muted hover:text-foreground",
-            )}
-          >
-            {item.q.length > 34 ? item.q.slice(0, 32) + "…" : item.q}
-          </button>
-        ))}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-2">
+          {QUESTIONS.map((item, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setIdx(i)}
+              className={cn(
+                "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                i === idx
+                  ? "border-accent bg-accent-soft text-accent"
+                  : guesses[i] !== null
+                    ? "border-border bg-surface text-subtle"
+                    : "border-border bg-surface-2 text-muted hover:text-foreground",
+              )}
+            >
+              {guesses[i] !== null && ((guesses[i] === "trust") === QUESTIONS[i].correct ? "✓ " : "✗ ")}
+              {item.q.length > 30 ? item.q.slice(0, 28) + "…" : item.q}
+            </button>
+          ))}
+        </div>
+        <span
+          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 font-mono text-xs font-semibold text-foreground"
+          title="How often you correctly spotted truth vs fabrication"
+        >
+          <ShieldQuestion size={13} className="text-accent" />
+          detector {caught}/{answered}
+        </span>
       </div>
 
       <div className="rounded-2xl border border-border bg-surface p-5">
@@ -99,20 +121,50 @@ export function ConfidentlyWrong() {
         </div>
 
         {!revealed ? (
-          <button
-            type="button"
-            onClick={() => setRevealed(true)}
-            className="mt-4 inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background transition-transform active:scale-[0.98]"
-          >
-            <Search size={15} /> Fact-check it
-          </button>
+          <div className="mt-4">
+            <p className="mb-2.5 text-sm font-medium text-muted">Your call — before you look anything up:</p>
+            <div className="flex flex-wrap gap-2.5">
+              <button
+                type="button"
+                onClick={() => makeGuess("trust")}
+                className="inline-flex items-center gap-2 rounded-full border-2 border-teal/50 bg-teal-soft px-4 py-2 text-sm font-semibold text-teal transition-all hover:border-teal active:scale-[0.98]"
+              >
+                <ThumbsUp size={15} /> Looks right to me
+              </button>
+              <button
+                type="button"
+                onClick={() => makeGuess("doubt")}
+                className="inline-flex items-center gap-2 rounded-full border-2 border-rose/50 bg-rose-soft px-4 py-2 text-sm font-semibold text-rose transition-all hover:border-rose active:scale-[0.98]"
+              >
+                <ThumbsDown size={15} /> Something's off
+              </button>
+            </div>
+          </div>
         ) : (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-4 rounded-xl border p-4" style={{ borderColor: qa.correct ? "color-mix(in srgb, var(--teal) 40%, var(--border))" : "color-mix(in srgb, var(--rose) 40%, var(--border))", background: qa.correct ? "var(--teal-soft)" : "var(--rose-soft)" }}>
-            <div className="flex items-center gap-2 font-semibold" style={{ color: qa.correct ? "var(--teal)" : "var(--rose)" }}>
-              <span className="grid h-6 w-6 place-items-center rounded-full text-white" style={{ background: qa.correct ? "var(--teal)" : "var(--rose)" }}>
-                {qa.correct ? <Check size={14} strokeWidth={3} /> : <X size={14} strokeWidth={3} />}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-4 rounded-xl border p-4"
+            style={{
+              borderColor: isTrue ? "color-mix(in srgb, var(--teal) 40%, var(--border))" : "color-mix(in srgb, var(--rose) 40%, var(--border))",
+              background: isTrue ? "var(--teal-soft)" : "var(--rose-soft)",
+            }}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2 font-semibold" style={{ color: isTrue ? "var(--teal)" : "var(--rose)" }}>
+                <span className="grid h-6 w-6 place-items-center rounded-full text-white" style={{ background: isTrue ? "var(--teal)" : "var(--rose)" }}>
+                  {isTrue ? <Check size={14} strokeWidth={3} /> : <X size={14} strokeWidth={3} />}
+                </span>
+                {isTrue ? "Actually correct" : "Confidently wrong"}
+              </div>
+              <span
+                className={cn(
+                  "rounded-full px-2.5 py-1 text-xs font-bold",
+                  userWasRight ? "bg-teal text-white" : "bg-rose text-white",
+                )}
+              >
+                {userWasRight ? "you caught it" : "it fooled you"}
               </span>
-              {qa.correct ? "Actually correct" : "Confidently wrong"}
             </div>
             <p className="mt-2 text-[0.95rem] leading-relaxed text-foreground/85">{qa.truth}</p>
             <p className="mt-2 text-xs italic text-muted">{qa.why}</p>
@@ -121,7 +173,9 @@ export function ConfidentlyWrong() {
       </div>
 
       <p className="text-center text-xs text-subtle">
-        Notice the confidence bar barely moves between the right answers and the wrong ones. You genuinely cannot tell which is which from the tone.
+        {answered === QUESTIONS.length
+          ? `Final score: ${caught}/${QUESTIONS.length}. The confidence bar never told you which was which — that's the lesson.`
+          : "Guess first, then see the truth. The confidence bar won't help you — that's the point."}
       </p>
     </div>
   );

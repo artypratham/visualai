@@ -1,4 +1,7 @@
-import { Prose, Lead, P, H2, Strong, Em, Term } from "@/components/lesson/prose";
+import { Prose, Lead, P, H2, Strong, Em, Term, Code } from "@/components/lesson/prose";
+import { AdvancedSection, AdvH } from "@/components/lesson/AdvancedSection";
+import { MathBlock, MathInline } from "@/components/lesson/math";
+import { CodeBlock } from "@/components/lesson/CodeBlock";
 import { Callout } from "@/components/lesson/Callout";
 import { ArtifactFrame } from "@/components/lesson/ArtifactFrame";
 import { NextTokenPredictor } from "@/components/artifacts/NextTokenPredictor";
@@ -84,6 +87,57 @@ export function LargeLanguageModelsContent() {
           other side. ✦
         </p>
       </Callout>
+
+      <AdvancedSection>
+        <P>
+          The loop you just hand-cranked has a precise probabilistic skeleton. Here it is.
+        </P>
+
+        <AdvH>The math</AdvH>
+        <P>
+          A language model factorises the probability of a whole text into one next-token prediction per position —
+          this single equation <Em>is</Em> the product spec of every GPT:
+        </P>
+        <MathBlock tex={String.raw`P(x_1, \dots, x_T) = \prod_{t=1}^{T} P\bigl(x_t \mid x_1, \dots, x_{t-1}\bigr)`} />
+        <P>
+          Training maximises the probability of real text — equivalently, minimises{" "}
+          <Term define="The negative log-probability the model assigns to the true next token, averaged over text.">cross-entropy</Term>:
+        </P>
+        <MathBlock tex={String.raw`\mathcal{L} = -\sum_{t} \log P\bigl(x_t \mid x_{<t}\bigr)`} />
+        <P>
+          At generation time the model emits a raw score (a <Em>logit</Em>) <MathInline tex={String.raw`z_i`} /> per
+          vocabulary token, and the temperature <MathInline tex={String.raw`T`} /> you slid reshapes them before the
+          softmax:
+        </P>
+        <MathBlock tex={String.raw`P(\text{token } i) = \frac{e^{z_i / T}}{\sum_j e^{z_j / T}}`} />
+        <P>
+          As <MathInline tex={String.raw`T \to 0`} /> the distribution collapses onto the argmax (greedy, repetitive);
+          as <MathInline tex={String.raw`T`} /> grows it flattens toward uniform (chaotic). Real systems also clip the
+          tail before sampling: <Strong>top-k</Strong> keeps only the k most likely tokens; <Strong>top-p</Strong>{" "}
+          keeps the smallest set whose probabilities sum past p (e.g. 0.9), then renormalises.
+        </P>
+
+        <AdvH>The code</AdvH>
+        <CodeBlock
+          title="autoregressive generation (the artifact's loop, formalised)"
+          code={`def generate(model, tokens, T, max_new):
+    for _ in range(max_new):
+        logits = model(tokens)             # one score per vocab token
+        probs = softmax(logits[-1] / T)    # temperature reshapes
+        probs = top_p_filter(probs, p=0.9) # clip the long tail
+        nxt = sample(probs)                # the dice roll
+        tokens.append(nxt)                 # feed it back in
+        if nxt == END:
+            break
+    return tokens`}
+        />
+        <P>
+          Cost note: <Code>model(tokens)</Code> re-reads the whole prefix each step — attention over t tokens costs{" "}
+          <MathInline tex={String.raw`O(t^2)`} />, which is why long outputs are slow and why every production system
+          caches the K and V matrices from the attention lesson (the &ldquo;KV cache&rdquo;) instead of recomputing
+          them per token.
+        </P>
+      </AdvancedSection>
     </Prose>
   );
 }
